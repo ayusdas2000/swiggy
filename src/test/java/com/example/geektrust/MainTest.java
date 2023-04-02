@@ -22,9 +22,15 @@ public class MainTest {
     @DisplayName("#1 Integration test 1")
     public void Application_Test() throws Exception {
         // Arrange
-        
-        Main.run("check");
+        String arguements = "sample_input/input1.txt";
+
+        // Act
+        Main.run(arguements);
+
         // Assert
-        Assertions.assertEquals("check", outputStreamCaptor.toString().trim());
+        Assertions.assertTrue("Game won by: PLAYER_A".equals(
+                outputStreamCaptor.toString().trim())
+                || "Game won by: PLAYER_B".equals(
+                        outputStreamCaptor.toString().trim()));
     }
 }
