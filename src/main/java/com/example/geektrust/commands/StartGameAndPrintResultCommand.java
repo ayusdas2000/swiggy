@@ -23,7 +23,7 @@ public class StartGameAndPrintResultCommand implements ICommand {
             if (game.getGameStatus().equals(GameStatus.FINISHED_DRAW)) {
                 System.out.println("Game ended in draw");
             } else {
-                System.out.println(game.getWinner().getName());
+                System.out.println("Game won by: " + game.getWinner().getName());
             }
         } catch (Exception e) {
             e.printStackTrace();

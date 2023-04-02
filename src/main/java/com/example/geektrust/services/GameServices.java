@@ -14,6 +14,7 @@ import com.example.geektrust.entities.Player;
 import com.example.geektrust.repositories.ICardRepository;
 import com.example.geektrust.repositories.IGameRepository;
 import com.example.geektrust.repositories.IPlayerRepository;
+import com.example.geektrust.utils.ConditionMatched;
 
 public class GameServices implements IGameServices {
 
@@ -47,7 +48,6 @@ public class GameServices implements IGameServices {
 
         // iterate the hashmap
         for (Map.Entry<Player, Stack<Card>> entry : cardsBelongingToPlayer.entrySet()) {
-            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
             int counter = 1;
             Stack<Card> cardsToBeGiven = new Stack<Card>();
             while (counter <= 5) {
@@ -82,60 +82,62 @@ public class GameServices implements IGameServices {
         // set game status
         game.setGameStatus(GameStatus.RUNNING);
 
-        // get cards belonging to player
-        LinkedHashMap<Player, Stack<Card>> playerSequence = game.getCardsBelongingToPlayer();
+        // iterate the hashmap till any one player has 0 cards
+        while (true) {
+            // get cards belonging to player
+            LinkedHashMap<Player, Stack<Card>> playerSequence = game.getCardsBelongingToPlayer();
 
-        // iterate the hashmap
-        for (Map.Entry<Player, Stack<Card>> entry : playerSequence.entrySet()) {
-            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+            for (Map.Entry<Player, Stack<Card>> entry : playerSequence.entrySet()) {
 
-            // if player has no cards then he is winner
-            if (entry.getValue().size() == 0) {
-                game.setWinner(entry.getKey());
-                game.setGameStatus(GameStatus.FINISHED);
-                // game finished remove it now;
-                iGameRepository.removeGame();
-                return game;
-            }
-            // if discard pile is empty or condition don't match then draw a card from draw
-            // pile
-            if (game.getDisCardedPile().size() == 0
-                    || !entry.getValue().peek().drawingCondition(game.getDisCardedPile().peek())) {
-
-                // if draw pile is empty then game ends in draw
-                if (game.getDrawPile().size() == 0) {
-                    game.setGameStatus(GameStatus.FINISHED_DRAW);
-                    // game finished therefore remove from repo
+                // if player has no cards then he is winner
+                if (entry.getValue().size() == 0) {
+                    game.setWinner(entry.getKey());
+                    game.setGameStatus(GameStatus.FINISHED);
+                    // game finished remove it now;
                     iGameRepository.removeGame();
                     return game;
                 }
+                // if discard pile is empty or condition don't match then draw a card from draw
+                // pile
+                if (game.getDisCardedPile().size() == 0
+                        || !ConditionMatched.conditionMatched(entry.getValue().peek(),
+                                game.getDisCardedPile().peek())) {
 
-                // get the drawstack
-                Stack<Card> drawPile = game.getDrawPile();
-                Card drawCard = drawPile.pop();
-                // set the drawpile
-                game.setDrawPile(drawPile);
+                    // if draw pile is empty then game ends in draw
+                    if (game.getDrawPile().size() == 0) {
+                        game.setGameStatus(GameStatus.FINISHED_DRAW);
+                        // game finished therefore remove from repo
+                        iGameRepository.removeGame();
+                        return game;
+                    }
 
-                // get the discarded pile
-                Stack<Card> discardedPile = game.getDisCardedPile();
-                // place the card on discarded pile
-                discardedPile.add(drawCard);
-                game.setDisCardedPile(discardedPile);
-            } else {
-                // get the players cards
-                Stack<Card> cardsOfPlayer = entry.getValue();
-                // draw the card
-                Card drawCard = cardsOfPlayer.pop();
-                // get the discarded pile
-                Stack<Card> discardedPile = game.getDisCardedPile();
-                // add the card in discarded pile
-                discardedPile.add(drawCard);
-                game.setDisCardedPile(discardedPile);
-                playerSequence.put(entry.getKey(), cardsOfPlayer);
+                    // get the drawstack
+                    Stack<Card> drawPile = game.getDrawPile();
+                    Card drawCard = drawPile.pop();
+                    // set the drawpile
+                    game.setDrawPile(drawPile);
+
+                    // get the discarded pile
+                    Stack<Card> discardedPile = game.getDisCardedPile();
+                    // place the card on discarded pile
+                    discardedPile.add(drawCard);
+                    game.setDisCardedPile(discardedPile);
+                } else {
+                    // get the players cards
+                    Stack<Card> cardsOfPlayer = entry.getValue();
+                    // draw the card
+                    Card drawCard = cardsOfPlayer.pop();
+                    // get the discarded pile
+                    Stack<Card> discardedPile = game.getDisCardedPile();
+                    // add the card in discarded pile
+                    discardedPile.add(drawCard);
+                    game.setDisCardedPile(discardedPile);
+                    playerSequence.put(entry.getKey(), cardsOfPlayer);
+                }
+
             }
 
         }
-        return game;
 
     }
 

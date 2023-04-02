@@ -29,12 +29,4 @@ public class Card extends BaseEntity {
     public void setSuit(String suit) {
         this.suit = suit;
     }
-
-    public boolean drawingCondition(Object obj) {
-        Card other = (Card) obj;
-        if (other.rank == this.rank || other.suit.equals(this.suit)) {
-            return true;
-        }
-        return false;
-    }
 }
