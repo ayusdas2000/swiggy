@@ -11,6 +11,7 @@ import com.example.geektrust.entities.Card;
 import com.example.geektrust.entities.Game;
 import com.example.geektrust.entities.GameStatus;
 import com.example.geektrust.entities.Player;
+import com.example.geektrust.exceptions.SufficientPlayerNotFound;
 import com.example.geektrust.repositories.ICardRepository;
 import com.example.geektrust.repositories.IGameRepository;
 import com.example.geektrust.repositories.IPlayerRepository;
@@ -32,6 +33,9 @@ public class GameServices implements IGameServices {
     @Override
     public Game setupGame() {
         List<Player> players = iPlayerRepository.getAllPlayers();
+        if (players.size() < 2) {
+            throw new SufficientPlayerNotFound();
+        }
         Game game = new Game(players);
         Game insertedGame = iGameRepository.saveGame(game);
         return insertedGame;
